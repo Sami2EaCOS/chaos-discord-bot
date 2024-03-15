@@ -22,13 +22,20 @@ public class PlayerService {
     @Transactional
     public Mono<Player> get(User user, Guild guild) {
         return repository
-                .findByDiscordIdAndGuildId(user.getId(), guild.getId())
+                .findByDiscordIdAndGuildId(
+                        user.getId().asBigInteger(),
+                        guild.getId().asBigInteger()
+                )
                 .switchIfEmpty(create(user, guild));
     }
 
     protected Mono<Player> create(User user, Guild guild) {
         return repository
-                .save(new Player(UUID.randomUUID(), user.getId(), guild.getId()));
+                .save(new Player(
+                        UUID.randomUUID(),
+                        user.getId().asBigInteger(),
+                        guild.getId().asBigInteger()
+                ));
     }
 
     @Transactional

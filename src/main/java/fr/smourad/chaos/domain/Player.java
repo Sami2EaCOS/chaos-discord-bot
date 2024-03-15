@@ -24,10 +24,10 @@ public class Player {
     private UUID id;
 
     @Nonnull
-    private Snowflake discordId;
+    private BigInteger discordId;
 
     @Nonnull
-    private Snowflake guildId;
+    private BigInteger guildId;
 
     private Integer boxes = 0;
     private BigInteger experience = BigInteger.ZERO;
