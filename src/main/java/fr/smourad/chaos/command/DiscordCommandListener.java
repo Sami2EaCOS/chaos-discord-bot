@@ -3,8 +3,8 @@ package fr.smourad.chaos.command;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.discordjson.json.ApplicationCommandRequest;
 import discord4j.rest.RestClient;
-import me.smourad.progressq.event.DiscordEventHandler;
-import me.smourad.progressq.event.DiscordEventListener;
+import fr.smourad.chaos.event.DiscordEventHandler;
+import fr.smourad.chaos.event.DiscordEventListener;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 

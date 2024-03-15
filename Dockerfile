@@ -1,4 +1,4 @@
-FROM maven:3.9.6-openjdk-17 AS build
+FROM maven:3.9.6-eclipse-temurin-21 AS build
 COPY src /home/app/src
 COPY pom.xml /home/app
 COPY lombok.config /home/app
