@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 
 import java.math.BigInteger;
+import java.util.UUID;
 
 @Service
 @Transactional(readOnly = true)
@@ -27,7 +28,7 @@ public class PlayerService {
 
     protected Mono<Player> create(User user, Guild guild) {
         return repository
-                .save(new Player(user.getId(), guild.getId()));
+                .save(new Player(UUID.randomUUID(), user.getId(), guild.getId()));
     }
 
     @Transactional

@@ -20,6 +20,7 @@ import java.util.UUID;
 public class Player {
 
     @Id
+    @Nonnull
     private UUID id;
 
     @Nonnull

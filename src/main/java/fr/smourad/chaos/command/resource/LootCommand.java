@@ -34,7 +34,6 @@ public class LootCommand extends DiscordCommand {
     @Override
     public Mono<Void> execute(ChatInputInteractionEvent event) {
         return event.getInteraction().getGuild()
-                .map(guild -> service.loot(event, event.getInteraction().getUser(), guild))
-                .then();
+                .flatMap(guild -> service.loot(event, event.getInteraction().getUser(), guild));
     }
 }
