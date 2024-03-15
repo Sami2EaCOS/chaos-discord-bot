@@ -1,0 +1,14 @@
+token: ${DISCORD_TOKEN}
+
+spring:
+  data:
+    mongodb:
+      database: chaos
+      authentication-database: admin
+      port: 27017
+      username: ${MONGO_USERNAME}
+      password: ${MONGO_PASSWORD}
+      host: db
+
+server:
+  port : 8080

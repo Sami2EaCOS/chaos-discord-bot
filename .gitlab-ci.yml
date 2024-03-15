@@ -1,0 +1,17 @@
+stages:
+  - build
+  - run
+
+before_script:
+  - docker version
+  - docker-compose version
+
+build:
+  stage: build
+  script:
+    - docker-compose build
+
+run:
+  stage: run
+  script:
+    - docker-compose up -d
