@@ -1,5 +1,6 @@
 package fr.smourad.chaos.command.resource;
 
+import discord4j.core.event.domain.interaction.ChatInputAutoCompleteEvent;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.discordjson.json.ApplicationCommandOptionData;
 import fr.smourad.chaos.command.DiscordCommand;
@@ -18,7 +19,7 @@ public class LootCommand extends DiscordCommand {
 
     @Override
     public String getName() {
-        return "loot";
+        return "chaos-loot";
     }
 
     @Override
@@ -35,6 +36,11 @@ public class LootCommand extends DiscordCommand {
     public Mono<Void> execute(ChatInputInteractionEvent event) {
         return event.getInteraction().getGuild()
                 .flatMap(guild -> service.loot(event, event.getInteraction().getUser(), guild));
+    }
+
+    @Override
+    public Mono<Void> autocomplete(ChatInputAutoCompleteEvent event) {
+        return Mono.empty();
     }
 
 }

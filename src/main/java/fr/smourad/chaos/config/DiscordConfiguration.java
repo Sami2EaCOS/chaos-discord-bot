@@ -6,6 +6,7 @@ import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.EventDispatcher;
 import discord4j.core.shard.GatewayBootstrap;
 import discord4j.gateway.GatewayOptions;
+import discord4j.gateway.intent.IntentSet;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -38,6 +39,7 @@ public class DiscordConfiguration {
         GatewayBootstrap<GatewayOptions> gateway = discordClient.gateway();
         return gateway
                 .setEventDispatcher(eventDispatcher)
+                .setEnabledIntents(IntentSet.all())
                 .login()
                 .block();
     }

@@ -3,18 +3,17 @@ package fr.smourad.chaos.service;
 import discord4j.core.event.domain.interaction.DeferrableInteractionEvent;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.User;
-import discord4j.core.object.entity.channel.Channel;
-import discord4j.rest.util.Permission;
+import discord4j.core.spec.InteractionApplicationCommandCallbackSpec;
+import discord4j.core.spec.MessageCreateSpec;
 import fr.smourad.chaos.domain.Player;
 import fr.smourad.chaos.domain.type.LootType;
+import fr.smourad.chaos.domain.type.RoleType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Random;
 
 @Service
@@ -33,13 +32,51 @@ public class LootService {
                 .flatMap(player -> loot(event, player));
     }
 
-    public Mono<Void> loot(DeferrableInteractionEvent event, Player player) {
+    @Transactional
+    public Mono<Void> giveBoxes(User user, Guild guild, int number) {
+        return playerService.get(user, guild)
+                .doOnNext(player -> player.setBoxes(player.getBoxes() + number))
+                .flatMap(playerService::save)
+                .then(user.getPrivateChannel()
+                        .flatMap(channel -> {
+                            String text = number == 1
+                                    ? "Vous avez gagné 1 nouvelle boîte sur le serveur %s"
+                                    .formatted(guild.getName())
+                                    : "Vous avez gagné %d nouvelles boîtes sur le serveur %s"
+                                    .formatted(number, guild.getName());
+
+                            return channel.createMessage(
+                                    MessageCreateSpec.builder()
+                                            .content(text)
+                                            .build()
+                            );
+                        })
+                )
+                .then();
+    }
+
+    protected Mono<Void> loot(DeferrableInteractionEvent event, Player player) {
         if (player.getBoxes() <= 0) {
-            player.setBoxes(1);
-            return playerService.save(player).then(event.reply("rien"));
+            return playerService.save(player).then(event.reply(
+                    InteractionApplicationCommandCallbackSpec.builder()
+                            .ephemeral(true)
+                            .content("Vous n'avez plus de boîtes à ouvrir!")
+                            .build()
+            ));
         }
 
         LootType loot = getRandomLoot();
+        return loot(event, player, loot);
+    }
+
+    @Transactional
+    public Mono<Void> loot(DeferrableInteractionEvent event, User user, Guild guild, LootType loot) {
+        return playerService
+                .get(user, guild)
+                .flatMap(player -> loot(event, player, loot));
+    }
+
+    protected Mono<Void> loot(DeferrableInteractionEvent event, Player player, LootType loot) {
         player.getLoots().putIfAbsent(loot, 0L);
         player.getLoots().put(loot, player.getLoots().get(loot) + 1L);
         player.setBoxes(player.getBoxes() - 1);
@@ -54,15 +91,8 @@ public class LootService {
 
     protected Mono<Void> addPermissions(Guild guild, Player player, LootType loot) {
         return switch (loot) {
-            case MOVE_MEMBERS -> permissionService.givePermissions(
-                    guild, player, Channel.Type.GUILD_VOICE, Permission.MOVE_MEMBERS
-            );
-            case TAG_EVERYONE -> Flux
-                    .fromIterable(List.of(Channel.Type.GUILD_VOICE, Channel.Type.GUILD_TEXT))
-                    .flatMap(type -> permissionService.givePermissions(
-                            guild, player, type, Permission.MENTION_EVERYONE
-                    ))
-                    .then();
+            case MOVE_MEMBERS -> permissionService.givePermissions(guild, player, RoleType.MOVE_MEMBERS);
+            case TAG_EVERYONE -> permissionService.givePermissions(guild, player, RoleType.TAG_EVERYONE);
             default -> Mono.empty();
         };
     }

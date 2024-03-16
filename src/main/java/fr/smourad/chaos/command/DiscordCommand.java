@@ -1,5 +1,6 @@
 package fr.smourad.chaos.command;
 
+import discord4j.core.event.domain.interaction.ChatInputAutoCompleteEvent;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.core.object.command.ApplicationCommandInteractionOption;
 import discord4j.core.object.command.ApplicationCommandInteractionOptionValue;
@@ -17,6 +18,7 @@ public abstract class DiscordCommand {
     protected abstract List<ApplicationCommandOptionData> getOptions();
 
     public abstract Mono<Void> execute(ChatInputInteractionEvent event);
+    public abstract Mono<Void> autocomplete(ChatInputAutoCompleteEvent event);
 
     private Object getParameter(ChatInputInteractionEvent event, String key, Function<? super ApplicationCommandInteractionOptionValue, ?> type) {
         return event.getOption(key)
