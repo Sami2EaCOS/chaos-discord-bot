@@ -36,4 +36,5 @@ public class LootCommand extends DiscordCommand {
         return event.getInteraction().getGuild()
                 .flatMap(guild -> service.loot(event, event.getInteraction().getUser(), guild));
     }
+
 }

@@ -1,5 +1,6 @@
 package fr.smourad.chaos.service;
 
+import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.User;
 import fr.smourad.chaos.domain.Player;
@@ -9,7 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 
-import java.math.BigInteger;
 import java.util.UUID;
 
 @Service
@@ -29,12 +29,31 @@ public class PlayerService {
                 .switchIfEmpty(create(user, guild));
     }
 
+    @Transactional
+    public Mono<Player> get(Snowflake userId, Snowflake guildId) {
+        return repository
+                .findByDiscordIdAndGuildId(
+                        userId.asBigInteger(),
+                        guildId.asBigInteger()
+                )
+                .switchIfEmpty(create(userId, guildId));
+    }
+
     protected Mono<Player> create(User user, Guild guild) {
         return repository
                 .save(new Player(
                         UUID.randomUUID(),
                         user.getId().asBigInteger(),
                         guild.getId().asBigInteger()
+                ));
+    }
+
+    protected Mono<Player> create(Snowflake userId, Snowflake guildId) {
+        return repository
+                .save(new Player(
+                        UUID.randomUUID(),
+                        userId.asBigInteger(),
+                        guildId.asBigInteger()
                 ));
     }
 

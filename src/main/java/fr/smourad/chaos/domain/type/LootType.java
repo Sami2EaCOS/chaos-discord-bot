@@ -6,8 +6,13 @@ import lombok.Getter;
 public enum LootType {
 
     CHANGE_NAME(100),
-    MOVE_VOICE_CHANNEL(10),
-    KICK_VOICE_CHANNEL(1),
+    TAG_EVERYONE(100),
+    BAN_ONE_HOUR(100),
+    MUTE_TEXT(100),
+    MUTE_VOCAL(100),
+    MOVE_MEMBERS(100),
+    MODIFY_EMOJI(100),
+    MODIFY_SOUNDBOARD(100)
     ;
 
     private final Integer weight;
