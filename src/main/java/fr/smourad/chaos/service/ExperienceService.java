@@ -26,10 +26,11 @@ public class ExperienceService {
         return playerService.save(player);
     }
 
+    @Transactional
     public Mono<Void> check(User user, Guild guild, BigInteger before, BigInteger after) {
         BigInteger experienceForOneLevel = BigInteger.valueOf(10_000);
-        BigInteger levelBefore = before.mod(experienceForOneLevel);
-        BigInteger levelAfter = after.mod(experienceForOneLevel);
+        BigInteger levelBefore = before.divide(experienceForOneLevel);
+        BigInteger levelAfter = after.divide(experienceForOneLevel);
 
         if (levelBefore.compareTo(levelAfter) < 0)  {
             return lootService.giveBoxes(user, guild, 1);

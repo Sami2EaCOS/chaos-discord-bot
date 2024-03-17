@@ -1,5 +1,6 @@
 package fr.smourad.chaos.command;
 
+import discord4j.core.event.domain.guild.GuildCreateEvent;
 import discord4j.core.event.domain.interaction.ChatInputAutoCompleteEvent;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.discordjson.json.ApplicationCommandRequest;
@@ -7,6 +8,7 @@ import discord4j.rest.RestClient;
 import fr.smourad.chaos.event.DiscordEventHandler;
 import fr.smourad.chaos.event.DiscordEventListener;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -24,7 +26,11 @@ public class DiscordCommandListener implements DiscordEventListener {
         this.commands = commands.stream()
                 .collect(Collectors.toMap(DiscordCommand::getName, c -> c));
 
-        init(commands);
+        client.getApplicationId().flatMapMany(applicationId -> client
+                .getApplicationService()
+                .getGlobalApplicationCommands(applicationId)
+                .flatMap(command -> client.getApplicationService().deleteGlobalApplicationCommand(applicationId, command.id().asLong()))
+        ).subscribe();
     }
 
     @DiscordEventHandler
@@ -49,20 +55,31 @@ public class DiscordCommandListener implements DiscordEventListener {
         return Mono.empty();
     }
 
-    public void init(List<DiscordCommand> commands) {
-        Long applicationId = client.getApplicationId().block();
+    @DiscordEventHandler
+    public Mono<Void> init(GuildCreateEvent event) {
+        long guildId = event.getGuild().getId().asLong();
 
-        for (DiscordCommand command : commands) {
-            ApplicationCommandRequest commandRequest = ApplicationCommandRequest.builder()
-                    .name(command.getName())
-                    .description(command.getDescription())
-                    .addAllOptions(command.getOptions())
-                    .build();
+        return client.getApplicationId().flatMapMany(applicationId -> client
+                .getApplicationService()
+                .getGuildApplicationCommands(applicationId, guildId)
+                .flatMap(command -> client.getApplicationService()
+                        .deleteGuildApplicationCommand(applicationId, guildId, command.id().asLong())
+                ))
+                .then(client.getApplicationId()
+                        .flatMapMany(applicationId -> Flux.fromIterable(commands.values())
+                                .flatMap(command -> {
+                                            ApplicationCommandRequest commandRequest = ApplicationCommandRequest.builder()
+                                                    .name(command.getName())
+                                                    .description(command.getDescription())
+                                                    .addAllOptions(command.getOptions())
+                                                    .build();
 
-            client.getApplicationService()
-                    .createGlobalApplicationCommand(applicationId, commandRequest)
-                    .subscribe();
-        }
+                                            return client.getApplicationService()
+                                                    .createGuildApplicationCommand(applicationId, guildId, commandRequest);
+                                        }
+                                ))
+                        .then()
+                );
     }
 
 }

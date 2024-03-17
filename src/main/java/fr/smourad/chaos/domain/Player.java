@@ -9,6 +9,7 @@ import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigInteger;
+import java.time.Instant;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.UUID;
@@ -31,6 +32,7 @@ public class Player {
     @Nonnull
     private BigInteger guildId;
 
+    private Instant lastMessageDate;
     private Integer boxes = 0;
     private BigInteger experience = BigInteger.ZERO;
 
