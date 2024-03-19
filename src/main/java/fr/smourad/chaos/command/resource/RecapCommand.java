@@ -15,6 +15,7 @@ import reactor.core.publisher.Mono;
 
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 @Component
@@ -63,7 +64,12 @@ public class RecapCommand extends DiscordCommand {
                                             .addAllFields(Stream
                                                     .of(LootType.values())
                                                     .map(lootType -> EmbedCreateFields.Field
-                                                            .of(lootType.name(), player.getLoots().get(lootType).toString(), false))
+                                                            .of(
+                                                                    lootType.name(),
+                                                                    Objects.requireNonNullElse(player.getLoots().get(lootType), 0).toString(),
+                                                                    false
+                                                            )
+                                                    )
                                                     .toList()
                                             )
                                             .build()

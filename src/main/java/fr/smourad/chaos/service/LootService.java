@@ -97,13 +97,16 @@ public class LootService {
         return switch (loot) {
             case MOVE_MEMBERS -> permissionService.givePermissions(guild, player, RoleType.MOVE_MEMBERS);
             case TAG_EVERYONE -> permissionService.givePermissions(guild, player, RoleType.TAG_EVERYONE);
+            case MODIFY_EMOJI -> permissionService.givePermissions(guild, player, RoleType.MODIFY_EMOJI);
             default -> Mono.empty();
         };
     }
 
     protected LootType getRandomLoot() {
         LootType[] loots = LootType.values();
-        Integer maximum = Arrays.stream(loots).map(LootType::getWeight).reduce(0, Integer::sum);
+        Integer maximum = Arrays.stream(loots)
+                .map(LootType::getWeight)
+                .reduce(0, Integer::sum);
         int weight = random.nextInt(maximum);
 
         for (LootType loot : loots) {

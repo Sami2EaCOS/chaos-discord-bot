@@ -49,4 +49,13 @@ public class ActionService {
         return playerService.save(player).then(followUp);
     }
 
+    public Mono<Void> modifyEmoji(Player player, Guild guild) {
+        return doSomethingWithRole(
+                player,
+                guild,
+                LootType.MODIFY_EMOJI,
+                RoleType.MODIFY_EMOJI
+        );
+    }
+
 }
