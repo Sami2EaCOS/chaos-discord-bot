@@ -14,7 +14,7 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.UUID;
 
-@Document("user")
+@Document("player")
 @Data
 @CompoundIndex(def = "{'discordId': 1, 'guildId': 1}", unique = true)
 public class Player {

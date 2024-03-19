@@ -1,5 +1,7 @@
 package fr.smourad.chaos.service;
 
+import discord4j.common.util.Snowflake;
+import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.interaction.DeferrableInteractionEvent;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.User;
@@ -24,6 +26,7 @@ public class LootService {
     private final PlayerService playerService;
     private final PermissionService permissionService;
     private final Random random;
+    private final GatewayDiscordClient gatewayDiscordClient;
 
     @Transactional
     public Mono<Void> loot(DeferrableInteractionEvent event, User user, Guild guild) {
@@ -33,11 +36,12 @@ public class LootService {
     }
 
     @Transactional
-    public Mono<Void> giveBoxes(User user, Guild guild, int number) {
-        return playerService.get(user, guild)
-                .doOnNext(player -> player.setBoxes(player.getBoxes() + number))
-                .flatMap(playerService::save)
-                .then(user.getPrivateChannel()
+    public Mono<Void> giveBoxes(Player player, Guild guild, int number) {
+        player.setBoxes(player.getBoxes() + number);
+
+        return gatewayDiscordClient
+                .getUserById(Snowflake.of(player.getDiscordId()))
+                .flatMap(user -> user.getPrivateChannel()
                         .flatMap(channel -> {
                             String text = number == 1
                                     ? "Vous avez gagné 1 nouvelle boîte sur le serveur %s"
@@ -57,12 +61,12 @@ public class LootService {
 
     protected Mono<Void> loot(DeferrableInteractionEvent event, Player player) {
         if (player.getBoxes() <= 0) {
-            return playerService.save(player).then(event.reply(
+            return event.reply(
                     InteractionApplicationCommandCallbackSpec.builder()
                             .ephemeral(true)
                             .content("Vous n'avez plus de boîtes à ouvrir!")
                             .build()
-            ));
+            );
         }
 
         LootType loot = getRandomLoot();

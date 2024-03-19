@@ -13,6 +13,7 @@ import fr.smourad.chaos.service.ServerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -23,6 +24,7 @@ import java.util.stream.IntStream;
 
 @Component
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class VocalExperienceScheduler {
 
     private final ServerService serverService;
@@ -31,6 +33,7 @@ public class VocalExperienceScheduler {
     private final GatewayDiscordClient gatewayDiscordClient;
 
     @Scheduled(fixedDelay = 10_000)
+    @Transactional
     public void updateVocalExperience() {
         serverService.findAll()
                 .flatMap(server -> gatewayDiscordClient
@@ -67,9 +70,7 @@ public class VocalExperienceScheduler {
 
                     player.setExperience(result);
 
-                    return gatewayDiscordClient
-                            .getUserById(Snowflake.of(player.getDiscordId()))
-                            .flatMap(user -> experienceService.check(user, guild, experience, result))
+                    return experienceService.check(player, guild, experience, result)
                             .thenReturn(player);
                 })
                 .flatMap(playerService::save)
